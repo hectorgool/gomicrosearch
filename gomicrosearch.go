@@ -1,5 +1,6 @@
 /*
 cd $GOPATH/src/github.com/hectorgool/gomicrosearch 
+go get gopkg.in/olivere/elastic.v3
 go build
 */
 
