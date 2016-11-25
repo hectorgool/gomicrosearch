@@ -1,34 +1,32 @@
 /*
-cd $GOPATH/src/github.com/hectorgool/gomicrosearch 
-go get gopkg.in/olivere/elastic.v3
-go build
+ curl -H "Content-Type: application/json" -X POST -d '{"term":"villa"}' http://localhost:8081/search
 */
 
 package main
 
 import (
-  "github.com/hectorgool/gomicrosearch/elasticsearch"
   "encoding/json"
   "errors"
   "log"
   "net/http"
   "golang.org/x/net/context"
+  "github.com/hectorgool/gomicrosearch/elasticsearch"
   "github.com/go-kit/kit/endpoint"
   httptransport "github.com/go-kit/kit/transport/http"
 )
 
-// StringService provides operations on strings.
+// SearchService provides operations on strings.
 type SearchService interface {
-  Term(string) (string, error)
+  Search(string) (string, error)
 }
 
 type searchService struct{}
 
-func (searchService) Term(term string) (string, error) {
-  
+func (searchService) Search(term string) (string, error) {
   if term == "" {
     return "", ErrEmpty
   }
+  log.Printf("\n term: %s\n", term)
   
   result, err := elasticsearch.SearchTerm(term)
   if err != nil {
@@ -39,7 +37,6 @@ func (searchService) Term(term string) (string, error) {
 }
 
 func main() {
-
   ctx := context.Background()
   svc := searchService{}
 
@@ -51,18 +48,17 @@ func main() {
   )
 
   http.Handle("/search", searchHandler)
-  log.Fatal(http.ListenAndServe(":8080", nil))
+  log.Fatal(http.ListenAndServe(":8081", nil))
 }
 
 func makeSearchEndpoint(svc SearchService) endpoint.Endpoint {
   return func(ctx context.Context, request interface{}) (interface{}, error) {
     req := request.(searchRequest)
-    v, err := svc.Term(req.S)
+    v, err := svc.Search(req.S)
     if err != nil {
       return searchResponse{v, err.Error()}, nil
     }
     return searchResponse{v, ""}, nil
-
   }
 }
 
@@ -79,11 +75,11 @@ func encodeResponse(_ context.Context, w http.ResponseWriter, response interface
 }
 
 type searchRequest struct {
-  S string `json:"s"`
+  S string `json:"term"`
 }
 
 type searchResponse struct {
-  V   string `json:"v"`
+  V   string `json:"data"`
   Err string `json:"err,omitempty"` // errors don't define JSON marshaling
 }
 

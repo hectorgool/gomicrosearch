@@ -9,6 +9,7 @@ import (
   j "github.com/ricardolonga/jsongo"
   "gopkg.in/olivere/elastic.v3"
   "encoding/json"
+  "log"
 )
 
 func SearchTerm( term string ) (string, error) {
@@ -57,6 +58,8 @@ func SearchTerm( term string ) (string, error) {
   if err != nil {
     // Deserialization failed
   }
+
+  log.Printf("\nSearchTerm: %s\n", rawJsonDocuments)
 
   return string(rawJsonDocuments), nil
 }
