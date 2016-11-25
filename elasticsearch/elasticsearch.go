@@ -1,127 +1,73 @@
+/*
+If you want to export variables, constants, and functions to be used with other
+programs, the name of the identifier must start with an uppercase letter.
+*/
+
 package elasticsearch
 
-
-
-//package main
-
 import (
-  "errors"
-  "fmt"
+  j "github.com/ricardolonga/jsongo"
   "gopkg.in/olivere/elastic.v3"
-  "reflect"
-  "time"
+  "encoding/json"
 )
 
-const (
-  indexName    = "applications"
-  docType      = "log"
-  appName      = "myApp"
-  indexMapping = `{
-    "mappings" : {
-      "log" : {
-        "properties" : {
-          "app" : { "type" : "string", "index" : "not_analyzed" },
-          "message" : { "type" : "string", "index" : "not_analyzed" },
-          "time" : { "type" : "date" }
-        }
-      }
-    }
-  }`
-)
+func SearchTerm( term string ) (string, error) {
 
-type Log struct {
-  App     string    `json:"app"`
-  Message string    `json:"message"`
-  Time    time.Time `json:"time"`
-}
+  elasticHost := "http://172.17.0.4:9200"
 
-func main() {
-  client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"))
+  client, err := elastic.NewClient(elastic.SetURL(elasticHost))
   if err != nil {
-    panic(err)
+      panic(err)
   }
 
-  err = createIndexWithLogsIfDoesNotExist(client)
-  if err != nil {
-    panic(err)
-  }
+  searchJson := j.Object().
+    Put("size", 10).
+    Put("query", j.Object().
+      Put("match", j.Object().
+        Put("_all", j.Object().
+          Put("query", term).
+          Put("operator", "and")))).
+    Put("sort", j.Array().
+      Put(j.Object().
+        Put("colonia", j.Object().
+          Put("order", "asc").
+          Put("mode", "avg"))))
 
-  err = findAndPrintAppLogs(client)
-  if err != nil {
-    panic(err)
-  }
-}
-
-func createIndexWithLogsIfDoesNotExist(client *elastic.Client) error {
-  exists, err := client.IndexExists(indexName).Do()
-  if err != nil {
-    return err
-  }
-
-  if exists {
-    return nil
-  }
-
-  res, err := client.CreateIndex(indexName).
-    Body(indexMapping).
-    Do()
-
-  if err != nil {
-    return err
-  }
-  if !res.Acknowledged {
-    return errors.New("CreateIndex was not acknowledged. Check that timeout value is correct.")
-  }
-
-  return addLogsToIndex(client)
-}
-
-func addLogsToIndex(client *elastic.Client) error {
-  for i := 0; i < 10; i++ {
-    l := Log{
-      App:     "myApp",
-      Message: fmt.Sprintf("message %d", i),
-      Time:    time.Now(),
-    }
-
-    _, err := client.Index().
-      Index(indexName).
-      Type(docType).
-      BodyJson(l).
+  searchResult, err := client.Search().
+      Index("mx").
+      Type("postal_code").
+      Source(searchJson).
+      Pretty(true). 
       Do()
-
-    if err != nil {
-      return err
-    }
-  }
-
-  return nil
-}
-
-func findAndPrintAppLogs(client *elastic.Client) error {
-  termQuery := elastic.NewTermQuery("app", appName)
-
-  res, err := client.Search(indexName).
-    Index(indexName).
-    Query(termQuery).
-    Sort("time", true).
-    Do()
-
   if err != nil {
-    return err
+      panic(err)
   }
 
-  fmt.Println("Logs found:")
-  var l Log
-  for _, item := range res.Each(reflect.TypeOf(l)) {
-    l := item.(Log)
-    fmt.Printf("time: %s message: %s\n", l.Time, l.Message)
+  var documents []Document
+  for _, hit := range searchResult.Hits.Hits {
+    var d Document
+    err := json.Unmarshal(*hit.Source, &d)
+    if err != nil {
+      // Deserialization failed
+    }
+    documents = append(documents, d)
   }
 
-  return nil
+  rawJsonDocuments, err := json.Marshal(documents)
+  if err != nil {
+    // Deserialization failed
+  }
+
+  return string(rawJsonDocuments), nil
 }
 
-//beta
-func SearchTerm(s string) string {
-  return s
+type Document struct {
+  Ciudad     string `json:"ciudad"`
+  Colonia    string `json:"colonia"`
+  Cp         string `json:"cp"`
+  Delegacion string `json:"delegacion"`
+  Location   struct {
+    Lat string `json:"lat"`
+    Lon string `json:"lon"`
+  } `json:"location"`
 }
