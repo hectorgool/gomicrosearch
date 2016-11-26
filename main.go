@@ -26,7 +26,6 @@ func (searchService) Search(term string) (string, error) {
   if term == "" {
     return "", ErrEmpty
   }
-  log.Printf("\n term: %s\n", term)
   
   result, err := elasticsearch.SearchTerm(term)
   if err != nil {

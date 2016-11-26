@@ -5,7 +5,13 @@
 ```sh
 cd $GOPATH/src/github.com/hectorgool/gomicrosearch 
 ```
-##### 2. Compile:
+##### 2. Get dependencies:
+#
+```sh
+go get ./...
+```
+
+##### 3. Compile:
 #
 ```sh
 go build
