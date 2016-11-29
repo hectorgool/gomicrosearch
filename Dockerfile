@@ -8,7 +8,9 @@ ADD . /go/src/github.com/hectorgool/gomicrosearch
 WORKDIR /go/src/github.com/hectorgool/gomicrosearch
 
 # Get godeps for managing and restoring dependencies
-#RUN go get github.com/tools/godep
+ENV ELASTICSEARCH_HOSTS=elasticsearch:9200
+
+ENV GOROOT=/usr/local/go
 
 # Restore godep dependencies
 RUN go get ./...

@@ -1,5 +1,5 @@
 /*
- curl -H "Content-Type: application/json" -X POST -d '{"term":"villa"}' http://localhost:8081/search
+ curl -H "Content-Type: application/json" -X POST -d '{"term":"villa"}' http://localhost:8080/search
 */
 
 package main

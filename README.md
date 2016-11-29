@@ -37,7 +37,7 @@ docker build -t gomicrosearch:0 .
 
 ### App Docker Container
 ```sh
-docker run -d -p 8080:8080 --name gomicrosearch -e ELASTICSEARCH_HOSTS=elasticsearch:9200 --restart=always --link elasticsearch gomicrosearch:0 
+docker run -d -p 8080:8080 --name gomicrosearch --restart=always --link elasticsearch gomicrosearch:0 
 ```
 
 ### Get ip Docker Container
