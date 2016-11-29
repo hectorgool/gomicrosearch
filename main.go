@@ -47,7 +47,7 @@ func main() {
   )
 
   http.Handle("/search", searchHandler)
-  log.Fatal(http.ListenAndServe(":8081", nil))
+  log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func makeSearchEndpoint(svc SearchService) endpoint.Endpoint {

@@ -6,11 +6,11 @@ programs, the name of the identifier must start with an uppercase letter.
 package elasticsearch
 
 import (
-  "os"
 	"encoding/json"
 	j "github.com/ricardolonga/jsongo"
 	"gopkg.in/olivere/elastic.v3"
 	"log"
+	"os"
 )
 
 var client *elastic.Client
@@ -18,7 +18,7 @@ var client *elastic.Client
 func init() {
 
 	var err error
-	client, err = elastic.NewClient(elastic.SetURL( os.Getenv("ELASTICSEARCH_HOSTS") ))
+	client, err = elastic.NewClient(elastic.SetURL(os.Getenv("ELASTICSEARCH_HOSTS")))
 	if err != nil {
 		panic(err)
 	}

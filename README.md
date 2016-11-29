@@ -30,6 +30,26 @@ docker run -d --name elasticsearch elasticsearch:2.3
 docker inspect --format '{{ .NetworkSettings.IPAddress }}' elasticsearch
 ```
 
+### Create Docker Image
+```sh
+docker build -t gomicrosearch:0 .
+```
+
+### App Docker Container
+```sh
+docker run -d -p 8080:8080 --name gomicrosearch -e ELASTICSEARCH_HOSTS=elasticsearch:9200 --restart=always --link elasticsearch gomicrosearch:0 
+```
+
+### Get ip Docker Container
+```sh
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' gomicrosearch
+```
+
+### Test Docker Container
+```sh
+curl -H "Content-Type: application/json" -X POST -d '{"term":"villa"}' http://`docker inspect --format '{{ .NetworkSettings.IPAddress }}' gomicrosearch`/search
+```
+
 ### Referencias:
 
 ##### go-kit 
